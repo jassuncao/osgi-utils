@@ -10,7 +10,7 @@ The module will attempt to create the required table if not present in the datab
 
 	CREATE TABLE <schema.><table> (pid VARCHAR NOT NULL, prop_name VARCHAR NOT NULL, prop_type VARCHAR NOT NULL, prop_value VARCHAR, CONSTRAINT pk_<table> PRIMARY KEY (pid, prop_name)) `
 
-** Remark **
+**Remark**
 This module was only tested with PostgreSQL 
 
 ##### Configuration
@@ -30,7 +30,7 @@ This module is configured using the system properties listed below. If you are u
 In addition to these properties is necessary to set an additional property that will instruct  Felix Configuration Admin to use a different persistence manager.
 This property is named `felix.cm.pm` and must be set to `sql`.
 
-** Example **
+**Example**
 
 	felix.cm.pm=sql
 	com.jassuncao.osgi.cm.sql.driver.name=PostgreSQL JDBC Driver
