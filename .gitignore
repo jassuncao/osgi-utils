@@ -1,11 +1,13 @@
 *.class
 
 **/.idea/*
+.idea
 *.iml
 .project
 .classpath
 ~*
 **/.settings/*
+.settings
 **/target/*
 **/bin/*
 **/build/*
@@ -14,3 +16,4 @@
 *.jar
 *.war
 *.ear
+
