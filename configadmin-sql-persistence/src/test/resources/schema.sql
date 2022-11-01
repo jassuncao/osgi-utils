@@ -1,1 +1,1 @@
-CREATE TABLE osgi_config (pid VARCHAR NOT NULL, key VARCHAR NOT NULL, type VARCHAR NOT NULL, value VARCHAR, CONSTRAINT pk_osgi_config PRIMARY KEY (pid, key))
+CREATE TABLE osgi_config (pid VARCHAR NOT NULL, prop_name VARCHAR NOT NULL, prop_type VARCHAR NOT NULL, prop_value VARCHAR, CONSTRAINT pk_osgi_config PRIMARY KEY (pid, prop_name));

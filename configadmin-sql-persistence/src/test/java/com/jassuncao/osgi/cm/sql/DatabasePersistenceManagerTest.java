@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Dictionary;
@@ -34,7 +35,6 @@ import org.dbunit.database.DatabaseConfig;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.ext.h2.H2DataTypeFactory;
-import org.h2.engine.Constants;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Before;
@@ -61,7 +61,7 @@ public class DatabasePersistenceManagerTest extends DBTestCase {
     
     static {
         try {
-            RunScript.execute(JDBC_URL, JDBC_USER, JDBC_PASSWORD, "classpath:/schema.sql", Constants.UTF8, false);
+            RunScript.execute(JDBC_URL, JDBC_USER, JDBC_PASSWORD, "classpath:/schema.sql", StandardCharsets.UTF_8, false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -76,6 +76,7 @@ public class DatabasePersistenceManagerTest extends DBTestCase {
 
     
     DataSource datasource;
+   
 
     @Before
     @Override
@@ -85,6 +86,19 @@ public class DatabasePersistenceManagerTest extends DBTestCase {
         when(datasource.getConnection()).then((Answer<Connection>) invocation -> getConnection().getConnection());
         LogHelper logHelper = new DummyLogHelper();
         underTest = new DatabasePersistenceManager(datasource, logHelper, "osgi_config", null);
+    }
+    
+
+    @Override
+    protected void setUpDatabaseConfig(DatabaseConfig config) {
+        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new H2DataTypeFactory());
+        config.setProperty(DatabaseConfig.PROPERTY_ESCAPE_PATTERN, "\"?\"");
+    }
+
+    @Override
+    protected IDataSet getDataSet() throws Exception {
+        return new FlatXmlDataSetBuilder()
+                .build(DatabasePersistenceManagerTest.class.getResourceAsStream("/dataset.xml"));
     }
 
     /**
@@ -173,17 +187,5 @@ public class DatabasePersistenceManagerTest extends DBTestCase {
     public void testDelete() throws IOException {
         underTest.delete("pid1");
         assertFalse(underTest.exists("pid1"));
-    }
-
-
-    @Override
-    protected void setUpDatabaseConfig(DatabaseConfig config) {
-        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new H2DataTypeFactory());
-    }
-
-    @Override
-    protected IDataSet getDataSet() throws Exception {
-        return new FlatXmlDataSetBuilder()
-                .build(DatabasePersistenceManagerTest.class.getResourceAsStream("/dataset.xml"));
     }
 }

@@ -8,7 +8,7 @@ This module provides a SQL database-backed persistence manager for Apache Felix 
 
 The module will attempt to create the required table if not present in the database. If you prefer to create the table manually or by other means, the create statement used internally is the following: 
 
-	CREATE TABLE <schema.><table> (pid VARCHAR NOT NULL, key VARCHAR NOT NULL, type VARCHAR NOT NULL, value VARCHAR, CONSTRAINT pk_<table> PRIMARY KEY (pid, key)) `
+	CREATE TABLE <schema.><table> (pid VARCHAR NOT NULL, prop_name VARCHAR NOT NULL, prop_type VARCHAR NOT NULL, prop_value VARCHAR, CONSTRAINT pk_<table> PRIMARY KEY (pid, prop_name)) `
 
 ** Remark **
 This module was only tested with PostgreSQL 

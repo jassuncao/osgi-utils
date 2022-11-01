@@ -103,7 +103,7 @@ public class DatabasePersistenceManager implements PersistenceManager {
         try {
             statement = connection.createStatement();
             String createStmt = "CREATE TABLE " + qualifiedTable
-                    + " (pid VARCHAR NOT NULL, key VARCHAR NOT NULL, type VARCHAR NOT NULL, value VARCHAR, CONSTRAINT pk_"+tableName+" PRIMARY KEY (pid, key))";
+                    + " (pid VARCHAR NOT NULL, prop_name VARCHAR NOT NULL, prop_type VARCHAR NOT NULL, prop_value VARCHAR, CONSTRAINT pk_"+tableName+" PRIMARY KEY (pid, prop_name))";
             statement.executeUpdate(createStmt);
         } catch (SQLException ex) {
             logHelper.log(LogService.LOG_WARNING, "Failed to create config table. Probably it already exists", ex);
@@ -224,21 +224,21 @@ public class DatabasePersistenceManager implements PersistenceManager {
             deleteStatement.executeUpdate();
 
             insertPropertyStatement = connection
-                    .prepareStatement("INSERT INTO " + qualifiedTable + " (pid, key, type, value) VALUES (?, ?, ?, ?)");
+                    .prepareStatement("INSERT INTO " + qualifiedTable + " (pid, prop_name, prop_type, prop_value) VALUES (?, ?, ?, ?)");
             insertPropertyStatement.setString(1, pid);
 
             for (Enumeration<?> ce = properties.keys(); ce.hasMoreElements();) {
-                String key = (String) ce.nextElement();
-                Object value = properties.get(key);
+                String name = (String) ce.nextElement();
+                Object value = properties.get(name);
                 String typeCode = PropertyConverter.getCodeForType(value);
                 String valueString = PropertyConverter.convertToString(value);
                 if (typeCode != null && valueString != null) {
-                    insertPropertyStatement.setString(2, key);
+                    insertPropertyStatement.setString(2, name);
                     insertPropertyStatement.setString(3, typeCode);
                     insertPropertyStatement.setString(4, valueString);
                     insertPropertyStatement.executeUpdate();
                 } else {
-                    logHelper.log(LogService.LOG_WARNING, "Failed to convert property " + key, null);
+                    logHelper.log(LogService.LOG_WARNING, "Failed to convert property " + name, null);
                 }
             }
             connection.commit();
@@ -265,15 +265,15 @@ public class DatabasePersistenceManager implements PersistenceManager {
         try {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             selectStatement = connection
-                    .prepareStatement("SELECT key, type, value FROM " + qualifiedTable + " WHERE pid = ?");
+                    .prepareStatement("SELECT prop_name, prop_type, prop_value FROM " + qualifiedTable + " WHERE pid = ?");
             selectStatement.setString(1, pid);
             ResultSet rs = selectStatement.executeQuery();
             while (rs.next()) {
-                String key = rs.getString(1);
+                String name = rs.getString(1);
                 String type = rs.getString(2);
                 String valueAsString = rs.getString(3);
                 Object value = PropertyConverter.convertFromString(type, valueAsString);
-                dictionary.put(key, value);
+                dictionary.put(name, value);
             }
         } finally {
             closeStatement(selectStatement);
@@ -288,11 +288,11 @@ public class DatabasePersistenceManager implements PersistenceManager {
         int previousLevel = connection.getTransactionIsolation();
         try {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            selectStatement = connection.prepareStatement("SELECT pid, key, type, value FROM " + qualifiedTable);
+            selectStatement = connection.prepareStatement("SELECT pid, prop_name, prop_type, prop_value FROM " + qualifiedTable);
             ResultSet rs = selectStatement.executeQuery();
             while (rs.next()) {
                 String pid = rs.getString(1);
-                String key = rs.getString(2);
+                String name = rs.getString(2);
                 String type = rs.getString(3);
                 String valueAsString = rs.getString(4);
                 Object value = PropertyConverter.convertFromString(type, valueAsString);
@@ -301,7 +301,7 @@ public class DatabasePersistenceManager implements PersistenceManager {
                     dictionary = new Hashtable<>();// NOSONAR
                     dictionaries.put(pid, dictionary);
                 }
-                dictionary.put(key, value);
+                dictionary.put(name, value);
             }
         } finally {
             closeStatement(selectStatement);
@@ -310,7 +310,7 @@ public class DatabasePersistenceManager implements PersistenceManager {
         return dictionaries;
     }
 
-    private static class DictionariesEnumeration implements Enumeration<Dictionary<String, Object>> {// NOSONAR
+    private static class DictionariesEnumeration implements Enumeration<Dictionary<String, Object>> {
 
         private final Iterator<Dictionary<String, Object>> iterator;
 
