@@ -1,0 +1,5 @@
+<dataset>
+    <osgi_config pid="pid1" key="key1" type = "T" value="value1"/>
+    <osgi_config pid="pid1" key="key2" type = "B" value="true"/>
+    <osgi_config pid="pid1" key="key3" type = "I" value="1"/>
+</dataset>
