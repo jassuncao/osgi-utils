@@ -5,8 +5,9 @@
 	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>OSGi Utils :: Parent</name>
-
+	<description>Collection of utilities useful in OSGi environments.</description>
 	<url>http://github.com/jassuncao/osgi-utils</url>
+	
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
