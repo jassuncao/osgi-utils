@@ -18,6 +18,7 @@ package com.jassuncao.osgi.cm.sql;
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -44,10 +45,13 @@ public class Activator implements BundleActivator {
     private static final Integer SERVICE_RANKING_VALUE = 5;
 
     private static final Object SQL_PM_NAME = "sql";
+    private static final Object DELEGATED_PM_NAME = "delegated";
 
     private ServiceTracker<DataSourceFactory, ServiceRegistration<PersistenceManager>> dataSourceFactoryTracker;
 
     private DefaultLogHelper logHelper;
+
+    private DelegatingPersistenceTracker delegatingPersistenceTracker;
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
@@ -56,20 +60,28 @@ public class Activator implements BundleActivator {
 
         logHelper = new DefaultLogHelper(logLevel, bundleContext);
         
-        if(isEmpty(properties.getDriverName()) || isEmpty(properties.getJdbcUrl())) {
-            logHelper.log(LogService.LOG_WARNING, "JDBC configuration missing. Can't initialize.");
-            return;
+        if(isNotEmpty(properties.getDriverName()) && isNotEmpty(properties.getJdbcUrl())) {
+            logHelper.log(LogService.LOG_INFO, "Creating DatasourceServiceTracker");
+            dataSourceFactoryTracker = new DatasourceServiceTracker(bundleContext, properties, logHelper);
+            dataSourceFactoryTracker.open();        
         }
-
-        logHelper.log(LogService.LOG_INFO, "Creating DatasourceServiceTracker");
-        dataSourceFactoryTracker = new DatasourceServiceTracker(bundleContext, properties, logHelper);
-        dataSourceFactoryTracker.open();
+        
+        if(isNotEmpty(properties.getDelegatedPrimary()) && isNotEmpty(properties.getDelegatedSecondary()) && isNotEmpty(properties.getDelegatedPrimaryPids())) {
+            logHelper.log(LogService.LOG_INFO, "Creating DelegatingPersistenceTracker");
+            
+            delegatingPersistenceTracker = new DelegatingPersistenceTracker(bundleContext, properties, logHelper);
+            delegatingPersistenceTracker.open();
+        }
+        
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         if (dataSourceFactoryTracker != null) {
             dataSourceFactoryTracker.close();
+        }
+        if(delegatingPersistenceTracker!=null) {
+            delegatingPersistenceTracker.close();
         }
         if (logHelper != null) {
             logHelper.stop();
@@ -140,7 +152,75 @@ public class Activator implements BundleActivator {
 
     }
     
+    private static class DelegatingPersistenceTracker extends ServiceTracker<PersistenceManager, PersistenceManager> {
+
+        private final String primaryName;
+        private final String secondaryName;
+        private final LogHelper logHelper;
+        private final Pattern primaryPids;
+        private PersistenceManager primaryManager;
+        private PersistenceManager secondaryManager;
+        private ServiceRegistration<PersistenceManager> registration;
+
+        public DelegatingPersistenceTracker(BundleContext context,  SystemPropertiesHelper propertiesHelper, LogHelper logHelper) {
+            super(context, PersistenceManager.class, null);
+            this.primaryName = propertiesHelper.getDelegatedPrimary();
+            this.secondaryName = propertiesHelper.getDelegatedSecondary();
+            this.primaryPids = Pattern.compile(propertiesHelper.getDelegatedPrimaryPids());
+            logHelper.log(LogService.LOG_DEBUG, "Primary PersistenceManager "+primaryName+" will hold PIDs matching: "+propertiesHelper.getDelegatedPrimaryPids(), null);
+            this.logHelper = logHelper;
+        }
+        
+        @Override
+        public PersistenceManager addingService(ServiceReference<PersistenceManager> reference) {
+            final String managerName = (String) reference.getProperty(PersistenceManager.PROPERTY_NAME);
+            final PersistenceManager service;
+            if (primaryManager == null && primaryName.equals(managerName)) {
+                logHelper.log(LogService.LOG_DEBUG, "Primary "+primaryName+" PersistenceManager added", null);
+                primaryManager = service = context.getService(reference);
+            }
+            else if (secondaryManager == null && secondaryName.equals(managerName)) {
+                logHelper.log(LogService.LOG_DEBUG, "Secondary "+primaryName+" PersistenceManager added", null);
+                secondaryManager = service = context.getService(reference);
+            }
+            else {
+                return null;
+            }
+            
+            if(primaryManager!=null && secondaryManager!=null) {
+                DelegatedPersistenceManager delegated = new DelegatedPersistenceManager(primaryManager, secondaryManager, primaryPids);
+                Hashtable<String, Object> props = new Hashtable<>();
+                props.put(Constants.SERVICE_DESCRIPTION, "Configuration Persistence Manager - Delegated");
+                props.put(Constants.SERVICE_RANKING, SERVICE_RANKING_VALUE+1);
+                props.put(PersistenceManager.PROPERTY_NAME, DELEGATED_PM_NAME);
+                logHelper.log(LogService.LOG_INFO, "Registering service DelegatedPersistenceManager", null);
+                this.registration = context.registerService(PersistenceManager.class, delegated, props);
+            }
+            return service;
+        }
+        
+        @Override
+        public void removedService(ServiceReference<PersistenceManager> reference, PersistenceManager service) {
+            if(this.registration!=null) {
+                this.registration.unregister();
+                this.registration = null;
+            }
+            if(service == primaryManager) {
+                primaryManager = null;
+            }
+            else if(service == secondaryManager) {
+                secondaryManager = null;
+            }
+            context.ungetService(reference);
+        }
+        
+    }
+    
     private static boolean isEmpty(String str) {
         return str == null || str.isEmpty();
+    }
+    
+    private static boolean isNotEmpty(String str) {
+        return !isEmpty(str);
     }
 }

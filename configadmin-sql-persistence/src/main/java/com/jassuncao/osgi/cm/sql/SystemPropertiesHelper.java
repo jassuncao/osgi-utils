@@ -27,23 +27,31 @@ import org.osgi.framework.BundleContext;
  */
 public class SystemPropertiesHelper {
     
-    private static final String PREFIX = "com.jassuncao.osgi.cm.sql.";
+    private static final String SQL_PREFIX = "com.jassuncao.osgi.cm.sql.";
+    private static final String DELEGATED_PREFIX = "com.jassuncao.osgi.cm.delegated.";
 
-    public static final String PROPERTY_DRIVER_NAME = PREFIX+"driver.name";
+    public static final String PROPERTY_DRIVER_NAME = SQL_PREFIX+"driver.name";
 
-    public static final String PROPERTY_JDBC_URL = PREFIX+"url";
+    public static final String PROPERTY_JDBC_URL = SQL_PREFIX+"url";
 
-    public static final String PROPERTY_JDBC_USER = PREFIX+"user";
+    public static final String PROPERTY_JDBC_USER = SQL_PREFIX+"user";
 
-    public static final String PROPERTY_JDBC_PASSWORD = PREFIX+"password"; 
+    public static final String PROPERTY_JDBC_PASSWORD = SQL_PREFIX+"password"; 
 
-    public static final String PROPERTY_TABLE = PREFIX+"table";
+    public static final String PROPERTY_TABLE = SQL_PREFIX+"table";
     
-    public static final String PROPERTY_SCHEMA = PREFIX+"schema";
+    public static final String PROPERTY_SCHEMA = SQL_PREFIX+"schema";
     
-    public static final String PROPERTY_LOG_LEVEL = PREFIX+"loglevel";
+    public static final String PROPERTY_LOG_LEVEL = SQL_PREFIX+"loglevel";
     
-    public static final String PROPERTY_PAX_CONFIG = PREFIX+"paxconfig";
+    public static final String PROPERTY_PAX_CONFIG = SQL_PREFIX+"paxconfig";
+    
+    public static final String PROPERTY_DELEGATED_PRIMARY = DELEGATED_PREFIX+"primary";
+    
+    public static final String PROPERTY_DELEGATED_SECONDARY = DELEGATED_PREFIX+"secondary";
+    
+    public static final String PROPERTY_DELEGATED_PRIMARY_PIDS = DELEGATED_PREFIX+"primary.pids";
+    
     
     private final BundleContext bundleContext;
     private final Properties paxJdbcProperties = new Properties();
@@ -89,6 +97,18 @@ public class SystemPropertiesHelper {
     public String getPaxJdbcConfig() {
         return getOwnValue(PROPERTY_PAX_CONFIG, null);
     }
+   
+    public String getDelegatedPrimary() {
+        return getOwnValue(PROPERTY_DELEGATED_PRIMARY, null);
+    }
+    
+    public String getDelegatedSecondary() {
+        return getOwnValue(PROPERTY_DELEGATED_SECONDARY, null);
+    }
+    
+    public String getDelegatedPrimaryPids() {
+        return getOwnValue(PROPERTY_DELEGATED_PRIMARY_PIDS, null);
+    }
     
     private String getOwnValueOrPax(String key, String paxFallbackKey, String defaultValue) {
         String value = bundleContext.getProperty(key);
@@ -107,5 +127,6 @@ public class SystemPropertiesHelper {
         String value = bundleContext.getProperty(key);
         return value !=null ? Integer.parseInt(value) : defaultValue;
     }
+
     
 }
