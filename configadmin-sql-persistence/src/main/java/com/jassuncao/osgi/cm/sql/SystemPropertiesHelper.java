@@ -15,6 +15,10 @@
  */
 package com.jassuncao.osgi.cm.sql;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.osgi.framework.BundleContext;
 
 /**
@@ -33,18 +37,25 @@ public class SystemPropertiesHelper {
 
     public static final String PROPERTY_JDBC_PASSWORD = PREFIX+"password"; 
 
-    public static final String PROPERTY_DATASOURCE_NAME = PREFIX+"dataSourceName";
-
     public static final String PROPERTY_TABLE = PREFIX+"table";
     
     public static final String PROPERTY_SCHEMA = PREFIX+"schema";
     
     public static final String PROPERTY_LOG_LEVEL = PREFIX+"loglevel";
     
-    private final BundleContext bundleContext;
+    public static final String PROPERTY_PAX_CONFIG = PREFIX+"paxconfig";
     
-    SystemPropertiesHelper(BundleContext bundleContext){
+    private final BundleContext bundleContext;
+    private final Properties paxJdbcProperties = new Properties();
+    
+    SystemPropertiesHelper(BundleContext bundleContext) throws IOException{
         this.bundleContext = bundleContext;
+        String paxCfgFile = this.bundleContext.getProperty(PROPERTY_PAX_CONFIG);
+        if(paxCfgFile!=null && !paxCfgFile.isEmpty()) {
+            try(FileInputStream inStream = new FileInputStream(paxCfgFile)){
+                paxJdbcProperties.load(inStream);
+            }
+        }
     }
     
     public int getLogLevel() {
@@ -52,34 +63,42 @@ public class SystemPropertiesHelper {
     }
 
     public String getDriverName() {
-        return getValue(PROPERTY_DRIVER_NAME, null);
+        return getOwnValueOrPax(PROPERTY_DRIVER_NAME,"osgi.jdbc.driver.name", null);
     }
 
     public String getJdbcUrl() {
-        return getValue(PROPERTY_JDBC_URL, null);
+        return getOwnValueOrPax(PROPERTY_JDBC_URL, "url", null);
     }
 
     public String getJdbcUser() {
-        return getValue(PROPERTY_JDBC_USER, null);
+        return getOwnValueOrPax(PROPERTY_JDBC_USER, "user", null);
     }
 
     public String getJdbcPassword() {
-        return getValue(PROPERTY_JDBC_PASSWORD, null);
+        return getOwnValueOrPax(PROPERTY_JDBC_PASSWORD,"password", null);
     }
 
-    public String getDataSourceName() {
-        return getValue(PROPERTY_DATASOURCE_NAME, "cm_sql");
-    }
-    
     public String getTableName() {
-        return getValue(PROPERTY_TABLE, "osgi_config");
+        return getOwnValue(PROPERTY_TABLE, "osgi_config");
     }
 
     public String getSchema() {
-        return getValue(PROPERTY_SCHEMA, null);
+        return getOwnValue(PROPERTY_SCHEMA, null);
+    }
+    
+    public String getPaxJdbcConfig() {
+        return getOwnValue(PROPERTY_PAX_CONFIG, null);
+    }
+    
+    private String getOwnValueOrPax(String key, String paxFallbackKey, String defaultValue) {
+        String value = bundleContext.getProperty(key);
+        if(value==null) {
+            value = paxJdbcProperties.getProperty(paxFallbackKey, defaultValue);
+        }
+        return value;
     }
 
-    private String getValue(String key, String defaultValue) {
+    private String getOwnValue(String key, String defaultValue) {
         String value = bundleContext.getProperty(key);
         return value !=null ? value : defaultValue;
     }
