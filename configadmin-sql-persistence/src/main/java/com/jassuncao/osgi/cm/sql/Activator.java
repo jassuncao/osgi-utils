@@ -55,6 +55,11 @@ public class Activator implements BundleActivator {
         int logLevel = properties.getLogLevel();
 
         logHelper = new DefaultLogHelper(logLevel, bundleContext);
+        
+        if(isEmpty(properties.getDriverName()) || isEmpty(properties.getJdbcUrl())) {
+            logHelper.log(LogService.LOG_WARNING, "JDBC configuration missing. Can't initialize.");
+            return;
+        }
 
         logHelper.log(LogService.LOG_INFO, "Creating DatasourceServiceTracker");
         dataSourceFactoryTracker = new DatasourceServiceTracker(bundleContext, properties, logHelper);
@@ -133,5 +138,9 @@ public class Activator implements BundleActivator {
             return dataSourceFactory.createDataSource(props);
         }
 
+    }
+    
+    private static boolean isEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 }
