@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.joaoassuncao.osgi-utils</groupId>
     <artifactId>osgi-utils-parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>configadmin-sql-persistence</artifactId>
   <name>SQL Database persistence for Configuration Admin</name>
