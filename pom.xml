@@ -47,6 +47,8 @@
 		<slf4j.version>1.7.32</slf4j.version>
 		<bnd.version>6.3.1</bnd.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<felix.cm.json.version>1.0.6</felix.cm.json.version>
+		<karaf.version>4.3.2</karaf.version>
 	</properties>
 
 
@@ -110,6 +112,7 @@
 
 	<modules>
 		<module>configadmin-sql-persistence</module>
+		<module>config-extras</module>
 	</modules>
 
 	<profiles>

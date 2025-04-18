@@ -5,14 +5,35 @@
     <artifactId>osgi-utils-parent</artifactId>
     <version>1.1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>configadmin-sql-persistence</artifactId>
-  <name>SQL Database persistence for Configuration Admin</name>
-  <description>SQL Database persistence for Configuration Admin.</description>
+  <artifactId>config-extras</artifactId>
+  <name>Configuration extras</name>
+  <description>Provides additional Karaf commands to manage configurations</description>
   <dependencies>
   		<dependency>
 			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.configadmin</artifactId>
-			<version>1.9.0</version>
+			<artifactId>org.apache.felix.cm.json</artifactId>
+			<version>${felix.cm.json.version}</version>
+		</dependency>
+		
+		 <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-json_1.1_spec</artifactId>
+            <version>1.2</version>
+            <scope>provided</scope>
+        </dependency>
+		
+		<dependency>
+			<groupId>org.apache.karaf.shell</groupId>
+			<artifactId>org.apache.karaf.shell.core</artifactId>
+			<version>${karaf.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.karaf.config</groupId>
+			<artifactId>org.apache.karaf.config.core</artifactId>
+			<version>${karaf.version}</version>
+			<scope>provided</scope>
 		</dependency>
         
         <dependency>
@@ -40,24 +61,17 @@
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>2.1.214</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.dbunit</groupId>
-            <artifactId>dbunit</artifactId>
-            <version>2.5.1</version>
-            <scope>test</scope>
-        </dependency>
         
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>org.apache.karaf.config</groupId>
+        	<artifactId>org.apache.karaf.config.core</artifactId>
+        	<version>4.3.6</version>
         </dependency>
   </dependencies>
   
