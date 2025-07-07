@@ -68,11 +68,7 @@
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-        	<groupId>org.apache.karaf.config</groupId>
-        	<artifactId>org.apache.karaf.config.core</artifactId>
-        	<version>4.3.6</version>
-        </dependency>
+                
   </dependencies>
   
   <build>

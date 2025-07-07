@@ -48,7 +48,7 @@
 		<bnd.version>6.3.1</bnd.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<felix.cm.json.version>1.0.6</felix.cm.json.version>
-		<karaf.version>4.3.2</karaf.version>
+		<karaf.version>4.3.6</karaf.version>
 	</properties>
 
 
@@ -147,16 +147,14 @@
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
-						<extensions>true</extensions>
-						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
-						</configuration>
-					</plugin>
+			          <groupId>org.sonatype.central</groupId>
+			          <artifactId>central-publishing-maven-plugin</artifactId>
+			          <version>0.8.0</version>
+			          <extensions>true</extensions>
+			          <configuration>
+			            <publishingServerId>central</publishingServerId>
+			          </configuration>
+			        </plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
